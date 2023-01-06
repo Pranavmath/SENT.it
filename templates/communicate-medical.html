@@ -1,0 +1,22 @@
+{% extends "base.html" %} {% block title %}Communicate{% endblock %} 
+{% block main%}
+<html lang="en">
+  <h1>Communicate with Patients</h1>
+
+<body>
+{% if not contacts %}
+    <p>No patients have connected with you yet</p>
+{% else %}
+    <form action="" method="post">
+    {% for patient in contacts %}
+        Do you want to chat with: <input type="submit" class="btn btn-primary" name="redirect" value="{{ patient }}">
+        <br>
+    {% endfor %}
+    </form>
+{% endif %}
+
+</body>
+
+</html>
+
+{% endblock %}

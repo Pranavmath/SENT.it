@@ -1,0 +1,110 @@
+{% extends "base.html" %} {% block title %}Communicate{% endblock %} 
+{% block main%}
+<html lang="en">
+  <head>
+    <title>Signup</title>
+    <meta charset="utf-8">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/communicate.css') }}">
+  </head>
+<!--NOTE THIS IS THE SIGNUP FORM-->
+  <body>
+     <h1>Sign up</h1>
+    <form method="POST">
+    <div class="form-group">
+      <label for="firstname">First Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="firstname"
+        name="firstname"
+        placeholder="Enter first name"
+      />
+    </div>
+    <div class="form-group">
+      <label for="lastname">Last Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="lastname"
+        name="lastname"
+        placeholder="Enter password"
+      />
+    </div>
+    <br><br>
+    <label for="email">Email Address</label>
+    <input
+      type="text"
+      class="form-control"
+      id="email"
+      name="email"
+      placeholder="Enter email"
+    />
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input
+      type="password"
+      class="form-control"
+      id="password"
+      name="password"
+      placeholder="Enter password"
+    />
+  </div>
+  <br><br>
+  <div class="form-group">
+    <label for="confirmpassword">Confirm Password</label>
+    <input
+      type="password"
+      class="form-control"
+      id="confirmpassword"
+      name="confirmpassword"
+      placeholder="Enter password again"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="job">Are you a medical Practitioner or a patient</label>
+    <select class="form-select" aria-label="Job" id="job" name="job">
+      <option selected>Please select a value</option>
+      <option value="medical">Medical Practitioner</option>
+      <option value="patient">Patient</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="location">Location</label>
+    <button type="button" class="btn btn-primary" onclick="getlocation()">
+      Get Location
+    </button>
+
+    <br>
+    
+    <p1 id="loc">Please wait for the location to pop up before you submit the form</p1>
+
+    <input type='hidden' id='location' name='loc' value='' />
+      
+      <script>
+        var variable1 = document.getElementById("loc");
+        var variable2 = document.getElementById("location");
+        
+        function getlocation() {
+          navigator.geolocation.getCurrentPosition(showLoc);
+        }
+        function showLoc(pos) {
+          variable2.value = pos.coords.latitude + " " + pos.coords.longitude;
+          variable1.innerHTML =
+            "Latitude: " +
+            pos.coords.latitude +
+            "<br>Longitude: " +
+            pos.coords.longitude;
+        }
+      </script>
+  </div>
+  
+  <br><br>
+    <button type="submit" class="btn btn-primary"> Submit</button>
+    </form>
+  </body>
+</html>
+
+{% endblock %}

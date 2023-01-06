@@ -1,0 +1,70 @@
+{% extends "base.html" %} {% block title %}Communicate{% endblock %}
+{% block main%}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <title>Title</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+
+<!-- Try to figure out a way to put the javascript code in the socket.js file -->
+
+<script type="text/javascript">
+$(document).ready(function() {
+    {% for message in messages %}
+        $("#messages").append($('<p>').text("{{ message }}"));
+    {% endfor %}
+
+
+    var socket = io.connect("http://127.0.0.1:5000")
+
+    var sendto_firstname_str = "{{ sendto_firstname }}";
+    //console.log(str)
+
+    socket.on("connect", function() {
+        console.log(socket.id);
+    //socket.emit("message", "User Connected!");
+    //socket.emit("socket", socket);
+    });
+
+    socket.on("message", (data) => {
+        if (data == "offline") {
+            alert("The user you want to send the message to is offline");
+        } else {
+            $("#messages").append($('<p>').text(data));
+        }
+    });
+
+    $("#sendBtn").on("click", function() {
+        socket.emit("message", "{{ user.firstname }}" + ": " + $("#message").val(), sendto_firstname_str);
+        $("#message").val("");
+    });
+});
+</script>
+
+<div id="messages">
+
+</div>
+<input type="text" id="message" placeholder="Message">
+<button id="sendBtn" class="btn btn-primary">Send</button>
+
+<br><br>
+
+<button onclick=clear_chat() class="btn btn-primary">Clear Chat</button>
+
+<script>
+    function clear_chat() {
+        $('#messages').empty();
+    }
+</script>
+
+</body>
+
+</head>
+</html>
+
+{% endblock %}

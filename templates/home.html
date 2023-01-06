@@ -1,0 +1,17 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} 
+{% block main%}
+
+<h1>Submit your images here:</h1>
+<form method = "POST" enctype = "multipart/form-data">
+    <input type="file" name="image">
+    <br><br>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% if (predict==[None, None]) %}
+  <h1></h1>
+{% else %}
+  <h1>We think you have {{predict[0]}} with an accuracy of {{predict[1] * 100}}%</h1>
+{% endif %}
+
+{% endblock %}
