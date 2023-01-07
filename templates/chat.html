@@ -15,23 +15,26 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+    // Given all the messages the users have already sent, display them
     {% for message in messages %}
         $("#messages").append($('<p>').text("{{ message }}"));
     {% endfor %}
 
-
+    // Connect to the socket and get the firstname of the user they have to send a message to
     var socket = io.connect("http://127.0.0.1:5000")
 
     var sendto_firstname_str = "{{ sendto_firstname }}";
-    //console.log(str)
 
+    // On connection console log the current socketid
     socket.on("connect", function() {
         console.log(socket.id);
-    //socket.emit("message", "User Connected!");
-    //socket.emit("socket", socket);
     });
 
+    // When they recieve a message from the server call this function
     socket.on("message", (data) => {
+        // If the message is that the user they want to send a message to is offline then alert the user
+        // If the user they want to send a message to is not offline then show the message
+
         if (data == "offline") {
             alert("The user you want to send the message to is offline");
         } else {
@@ -39,8 +42,11 @@ $(document).ready(function() {
         }
     });
 
+    // When the user clicks on the button to send a message then that message will be sent to the server
     $("#sendBtn").on("click", function() {
+        // Sends the message to the server
         socket.emit("message", "{{ user.firstname }}" + ": " + $("#message").val(), sendto_firstname_str);
+        // Clears the message text box once they send the message
         $("#message").val("");
     });
 });
@@ -57,6 +63,7 @@ $(document).ready(function() {
 <button onclick=clear_chat() class="btn btn-primary">Clear Chat</button>
 
 <script>
+    // This is the function that clears the chat when the clear chat button is pressed
     function clear_chat() {
         $('#messages').empty();
     }
