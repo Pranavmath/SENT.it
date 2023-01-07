@@ -9,6 +9,7 @@ DB_NAME = "database.db"
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
 db.init_app(app)
 
+
 def create_database(app):
   if not path.exists('./instance/' + DB_NAME):
     with app.app_context():
