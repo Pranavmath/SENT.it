@@ -11,11 +11,6 @@ import math
 import flask_socketio
 from flask_socketio import *
 
-# Example pull request
-# I love cheese
-
-super(cheese)
-
 def degtokm(lat1, long1, lat2, long2):
     R = 6371;  # km
     dLat = math.radians(lat2 - lat1)
