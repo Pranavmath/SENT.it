@@ -89,7 +89,7 @@ def home():
         image = request.files['image']
         img = Image.open(image)
 
-        prediction = predict(img)  # EX: prediction = ["Melanoma, 0.89"]
+        prediction = predict(img)  # EX: prediction = ["Melanoma", 0.89]
 
         return render_template('home.html', predict=prediction, user=current_user)
     # If not then just return the prediction as [None, None] so nothing is displayed
@@ -136,7 +136,7 @@ def signup():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # If they are trying to login in in then check if the login credentials are correct and then redirect to home
+    # If they are trying to log in then check if the login credentials are correct and then redirect to home
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -342,4 +342,4 @@ def handle_message(message, sendto_firstname):
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True, use_reloader=False)
