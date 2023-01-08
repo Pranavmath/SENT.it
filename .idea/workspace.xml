@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8969e8ab-c5e2-487a-b180-08ccb5ec84f9" name="Changes" comment="* experimented with bulma and added bulma styling to navbar">
-      <change afterPath="$PROJECT_DIR$/static/styles/home.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/sign-up.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/sign-up.html" afterDir="false" />
-    </list>
+    <list default="true" id="8969e8ab-c5e2-487a-b180-08ccb5ec84f9" name="Changes" comment="* formatted home page with bulma and experimented with animate.css" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -78,12 +71,20 @@
       <option name="project" value="LOCAL" />
       <updated>1673144149838</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="* formatted home page with bulma and experimented with animate.css">
+      <created>1673148376685</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1673148376685</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="taylor swift" />
     <MESSAGE value="* experimented with bulma and added bulma styling to navbar" />
-    <option name="LAST_COMMIT_MESSAGE" value="* experimented with bulma and added bulma styling to navbar" />
+    <MESSAGE value="* formatted home page with bulma and experimented with animate.css" />
+    <option name="LAST_COMMIT_MESSAGE" value="* formatted home page with bulma and experimented with animate.css" />
   </component>
 </project>
