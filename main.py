@@ -1,16 +1,16 @@
 from flask import *
-from PIL import Image
 from ml import predict
-from flask_login import UserMixin, login_user, login_required, logout_user, current_user
+from PIL import Image
+from flask_login import login_user, login_required, logout_user, current_user
 from flask_login import LoginManager
-from sqlalchemy.sql import func
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import *
+from models import User, Messages
 from app import *
 import math
-import flask_socketio
 from flask_socketio import *
 
+
+# This gives the distance in km between 2 points given their longitude and latitudes
 def degtokm(lat1, long1, lat2, long2):
     R = 6371;  # km
     dLat = math.radians(lat2 - lat1)
@@ -22,6 +22,7 @@ def degtokm(lat1, long1, lat2, long2):
     return d
 
 
+# Configuring flask_socketio and flask app
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
 create_database(app)
@@ -31,7 +32,8 @@ login_manager.init_app(app)
 app.app_context()
 
 
-def run():
+# This adds test medical practitioners
+def add_practitioners():
     # Medical practitioners:
     user1 = User(email="a@email.com",
                  firstname="ADoctor",
@@ -68,45 +70,36 @@ def run():
     db.session.commit()
 
 
+# This just gets our current user
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
 
 
 # Comment the code below once the people are added.
-#with app.app_context(): run()
-#print("Test people added")
+# with app.app_context(): add_practitioners()
+# print("Test people added")
 
 
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
+    # If they submit an image then given them the prediction
     if request.method == 'POST':
-        sendto_firstname = request.form['redirect']
-        current_firstname = current_user.firstname
-        prediction = predict()  # EX: prediction = ["Melanoma, 0.89"]
-
-        user_1_firstname = sorted([current_firstname, sendto_firstname])[0]
-        user_2_firstname = sorted([current_firstname, sendto_firstname])[1]
-
-        m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
-
-        if m:
-            messages = m.messages
-        else:
-            messages = []
-
-        return render_template("chat.html", user=current_user, sendto_firstname=sendto_firstname, flash=flash,
-                               messages=messages, predict=prediction)
         image = request.files['image']
         img = Image.open(image)
 
+        prediction = predict(img)  # EX: prediction = ["Melanoma, 0.89"]
+
+        return render_template('home.html', predict=prediction, user=current_user)
+    # If not then just return the prediction as [None, None] so nothing is displayed
     elif request.method == "GET":
         return render_template('home.html', predict=[None, None])
 
 
 @app.route("/sign-up", methods=["GET", "POST"])
 def signup():
+    # If they submit the form then get all the data and add to database then redirect to home
     if request.method == "POST":
         firstname = request.form.get("firstname")
         lastname = request.form.get("lastname")
@@ -115,8 +108,6 @@ def signup():
         confirmpassword = request.form.get("confirmpassword")
         job = request.form.get("job")
         location = [float(i) for i in request.form.get("loc").split(" ")]
-
-        print(location)
 
         user = User.query.filter_by(email=email).first()
 
@@ -145,6 +136,7 @@ def signup():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # If they are trying to login in in then check if the login credentials are correct and then redirect to home
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -164,13 +156,17 @@ def login():
 @app.route("/symptoms", methods=["GET", "POST"])
 @login_required
 def symptoms():
+    # When they send their symptoms then return the prediction
     if request.method == "POST":
-        check = request.form.getlist("multiselect")
-        print(check)
+        symptoms_list = request.form.getlist("multiselect")
+
+        # Right now we just print the list of symptoms but later we will get predictions from it
+        print(symptoms_list)
 
     return render_template("symptoms.html")
 
 
+# This just logs out the user
 @app.route('/logout')
 @login_required
 def logout():
@@ -182,43 +178,59 @@ def logout():
 @app.route("/communicate-patient", methods=["GET", "POST"])
 @login_required
 def communicate_patient():
+    # If they are a patient then allow them to access
     if current_user.job == "patient":
+        # This is the dict with all the medical practitioners - key and their distances from the patient - value
         distances = {}
 
+        # Adds all info to distances dict
         for med in User.query.filter_by(job="Medical Practitioner").all():
             patient_location = current_user.location
             med_location = med.location
             distance = round(degtokm(patient_location[0], patient_location[1], med_location[0], med_location[1]), 2)
             distances[med] = distance
 
+        # This gets the top_3 closet medical practitioners
         top_3 = dict(sorted(distances.items(), key=lambda x: x[1])[:3])
 
+        # This gets run they click on the button to communicate to a specific medical practitioner
         if request.method == "POST":
             sendto_firstname = request.form['redirect']
             current_firstname = current_user.firstname
 
+            # This is the alphabetically first user from the current and send_to firstnames
             user_1_firstname = sorted([current_firstname, sendto_firstname])[0]
+
+            # This is the alphabetically second user from the current and send_to firstnames
             user_2_firstname = sorted([current_firstname, sendto_firstname])[1]
 
+            # This is the messages object between the users
             m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
 
+            # If they sent messages then get the list of messages
             if m:
                 messages = m.messages
+            # If they have not sent any messages between each other than make the messages an empty list
             else:
                 messages = []
 
-            # The user will be added to the contacts of the medical practitioner that the user wants to send a message
-
+            # The user will be added to the contacts of the medical practitioner
+            # The contacts of a medical practitioners are all the patients that have talked to them
             send_to_user = User.query.filter_by(firstname=sendto_firstname).first()
 
+            # This makes sure they aren't already in the contact
             if not (current_user.firstname in list(send_to_user.contacts)):
                 send_to_user.contacts.append(current_user.firstname)
                 db.session.commit()
 
             return render_template("chat.html", user=current_user, sendto_firstname=sendto_firstname, flash=flash,
                                    messages=messages)
+
+        # If they haven't clicked on the button then just render the current page
         elif request.method == "GET":
             return render_template("communicate-patient.html", user=current_user, top=top_3)
+
+    # Don't allow them to access since they are not a patient
     else:
         flash("Sorry but since you are not a patient you can't access that page.", category="error")
         return redirect(url_for("communicate_medical"))
@@ -227,36 +239,51 @@ def communicate_patient():
 @app.route("/communicate-medical", methods=["GET", "POST"])
 @login_required
 def communicate_medical():
+    # If they are a medical practitioner allow them to access
     if current_user.job != "patient":
+        # Get the list of patients' firstnames that they communicated to
         contacts = list(current_user.contacts)
 
+        # If they click on the button to communicate with a patient
         if request.method == "POST":
             sendto_firstname = request.form['redirect']
             current_firstname = current_user.firstname
 
+            # This is the alphabetically first user from the current and send_to firstnames
             user_1_firstname = sorted([current_firstname, sendto_firstname])[0]
+            # This is the alphabetically second user from the current and send_to firstnames
             user_2_firstname = sorted([current_firstname, sendto_firstname])[1]
 
+            # This is the messages object between the users
             m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
 
+            # If they sent messages then get the list of messages
             if m:
                 messages = m.messages
+            # If they have not sent any messages between each other than make the messages an empty list
             else:
                 messages = []
 
-            return render_template("chat.html", user=current_user, sendto_firstname=sendto_firstname, flash=flash, messages=messages)
+            return render_template("chat.html", user=current_user, sendto_firstname=sendto_firstname, flash=flash,
+                                   messages=messages)
+        # If they haven't clicked on the button then just render the current page
         elif request.method == "GET":
             return render_template("communicate-medical.html", user=current_user, contacts=contacts)
+
+    # Don't allow them to access since they are not a medical practioner
     else:
         flash("Sorry but since you are not a medical practitioner you can't access that page.", category="error")
         return redirect(url_for("communicate_patient"))
 
 
+# Dict of all currently connected users and their socket id
 users = {}
 
 
+# Whenever a user connects to the socket this is ran
 @socketio.on("connect")
 def on_connect():
+    # Get the user's current socketid and firstname and then append to the users dict
     current_socketid = request.sid
     current_firstname = current_user.firstname
     users[current_firstname] = current_socketid
@@ -266,43 +293,53 @@ def on_connect():
 
 @socketio.on("disconnect")
 def on_disconnect():
+    # Delete the user from the user dict when they disconnect
     current_firstname = current_user.firstname
     del users[current_firstname]
 
     print("User disconnected: " + current_firstname)
 
 
+# This function is only ran when a user sends a message to the server when they are on chat.html
 @socketio.on("message")
 def handle_message(message, sendto_firstname):
     print(message)
 
-    if message != "User Connected!":
-        current_firstname = current_user.firstname
-        current_socketid = request.sid
+    # Get the user's current socketid and firstname
+    current_firstname = current_user.firstname
+    current_socketid = request.sid
 
-        user_1_firstname = sorted([current_firstname, sendto_firstname])[0]
-        user_2_firstname = sorted([current_firstname, sendto_firstname])[1]
+    # This is the alphabetically first user from the current and send_to firstnames
+    user_1_firstname = sorted([current_firstname, sendto_firstname])[0]
+    # This is the alphabetically second user from the current and send_to firstnames
+    user_2_firstname = sorted([current_firstname, sendto_firstname])[1]
 
-        m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
+    # This is the messages object between the users
+    m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
 
-        if m:
-            m.messages.append(message)
-            db.session.commit()
-        else:
-            new_messages = Messages(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname,
-                                    messages=[message])
-            db.session.add(new_messages)
-            db.session.commit()
+    # If they sent messages then append this messages to the list of messages
+    if m:
+        m.messages.append(message)
+        db.session.commit()
 
-        if sendto_firstname in users.keys():
-            sendto_socketid = users[sendto_firstname]
+    # If they haven't sent any messages between each other than create the new messages object and append this message
+    else:
+        new_messages = Messages(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname,
+                                messages=[message])
+        db.session.add(new_messages)
+        db.session.commit()
 
-            emit("message", message, to=[sendto_socketid, current_socketid])
-        else:
-            emit("message", "offline", to=current_socketid)
+    # If the user they want to send a message to is online then send the message to them
+    if sendto_firstname in users.keys():
+        # Gets the socket id of the user they want to send a message to via the users dict
+        sendto_socketid = users[sendto_firstname]
+
+        emit("message", message, to=[sendto_socketid, current_socketid])
+
+    # If the user they want to send a message to is online then tell the current user that they are offline
+    else:
+        emit("message", "offline", to=current_socketid)
 
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
-
-app.run()
