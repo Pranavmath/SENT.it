@@ -1,13 +1,12 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %} 
 {% block main%}
-
 <h1>Submit your images here:</h1>
 <form method = "POST" enctype = "multipart/form-data">
     <input type="file" name="image">
     <br><br>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
-
+<button class="button is-loading">Me when the taylor </button>
 {% if (predict==[None, None]) %}
   <h1></h1>
 {% else %}
