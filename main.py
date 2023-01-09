@@ -9,6 +9,15 @@ from app import *
 import math
 from flask_socketio import *
 
+"""
+Note: Since the model files are really big git lfs was used. 
+Since an error was originally thrown after using git lfs this stack overflow article was used to fix the error:
+https://stackoverflow.com/questions/33330771/git-lfs-this-exceeds-githubs-file-size-limit-of-100-00-mb
+
+If other files with big sizes are added to the project:
+Add them to git lfs in reference to the git lfs page and the stack overflow link above
+"""
+
 
 # This gives the distance in km between 2 points given their longitude and latitudes
 def degtokm(lat1, long1, lat2, long2):
