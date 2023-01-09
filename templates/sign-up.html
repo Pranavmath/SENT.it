@@ -8,23 +8,23 @@
   </head>
 <!--NOTE THIS IS THE SIGNUP FORM-->
   <body>
-     <h1>Sign up</h1>
-    <form method="POST">
-    <div class="form-group">
-      <label for="firstname">First Name</label>
+     <h1 class="title">Sign up</h1>
+    <form method="POST" class="box">
+    <div class="block">
+      <label for="firstname" class="label">First Name</label>
       <input
         type="text"
-        class="form-control"
+        class="input"
         id="firstname"
         name="firstname"
         placeholder="Enter first name"
       />
     </div>
-    <div class="form-group">
+    <div class="block">
       <label for="lastname">Last Name</label>
       <input
         type="text"
-        class="form-control"
+        class="input"
         id="lastname"
         name="lastname"
         placeholder="Enter password"
@@ -34,46 +34,46 @@
     <label for="email">Email Address</label>
     <input
       type="text"
-      class="form-control"
+      class="input"
       id="email"
       name="email"
       placeholder="Enter email"
     />
   </div>
-  <div class="form-group">
+  <div class="block">
     <label for="password">Password</label>
     <input
       type="password"
-      class="form-control"
+      class="input"
       id="password"
       name="password"
       placeholder="Enter password"
     />
   </div>
   <br><br>
-  <div class="form-group">
+  <div class="block">
     <label for="confirmpassword">Confirm Password</label>
     <input
       type="password"
-      class="form-control"
+      class="input"
       id="confirmpassword"
       name="confirmpassword"
       placeholder="Enter password again"
     />
   </div>
 
-  <div class="form-group">
+  <div class="block">
     <label for="job">Are you a medical Practitioner or a patient</label>
-    <select class="form-select" aria-label="Job" id="job" name="job">
+    <select class="input" aria-label="Job" id="job" name="job">
       <option selected>Please select a value</option>
       <option value="medical">Medical Practitioner</option>
       <option value="patient">Patient</option>
     </select>
   </div>
 
-  <div class="form-group">
+  <div class="block">
     <label for="location">Location</label>
-    <button type="button" class="btn btn-primary" onclick="getlocation()">
+    <button type="button" class="button is-primary" onclick="getlocation()" id="location">
       Get Location
     </button>
 
@@ -88,7 +88,11 @@
         var variable2 = document.getElementById("location");
         
         function getlocation() {
+          // change button to loading
+          document.getElementById("location").classList.add("is-loading");
           navigator.geolocation.getCurrentPosition(showLoc);
+          document.getElementById("location").classList.add("is-success");
+          // change back to normal
         }
         function showLoc(pos) {
           variable2.value = pos.coords.latitude + " " + pos.coords.longitude;
@@ -97,12 +101,13 @@
             pos.coords.latitude +
             "<br>Longitude: " +
             pos.coords.longitude;
+          document.getElementById("location").classList.remove("is-loading");
         }
       </script>
   </div>
   
   <br><br>
-    <button type="submit" class="btn btn-primary"> Submit</button>
+    <button type="submit" class="button is-primary"> Submit</button>
     </form>
   </body>
 </html>

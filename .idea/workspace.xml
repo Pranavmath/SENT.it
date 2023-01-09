@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8969e8ab-c5e2-487a-b180-08ccb5ec84f9" name="Changes" comment="* formatted home page with bulma and experimented with animate.css" />
+    <list default="true" id="8969e8ab-c5e2-487a-b180-08ccb5ec84f9" name="Changes" comment="* no changes">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/sign-up.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/sign-up.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -78,13 +83,21 @@
       <option name="project" value="LOCAL" />
       <updated>1673148376685</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="* no changes">
+      <created>1673198762815</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1673198762815</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="taylor swift" />
     <MESSAGE value="* experimented with bulma and added bulma styling to navbar" />
     <MESSAGE value="* formatted home page with bulma and experimented with animate.css" />
-    <option name="LAST_COMMIT_MESSAGE" value="* formatted home page with bulma and experimented with animate.css" />
+    <MESSAGE value="* no changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="* no changes" />
   </component>
 </project>

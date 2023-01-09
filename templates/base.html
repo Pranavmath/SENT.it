@@ -24,6 +24,7 @@
         type="button"
         data-toggle="collapse"
         data-target="#navbar"
+        class="navbar-burger"
       >
         <span></span>
       </button>
@@ -51,15 +52,15 @@
  {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %} {% for category, message in messages %} {% if category ==
     'error' %}
-    <div>
+    <div class="button is-danger animate__animated animate__slideInLeft">
       {{ message }}
-      <button type="button" data-dismiss="alert" onclick=delete_flash(this)>
+      <button type="button" data-dismiss="alert" onclick=delete_flash(this) class="button is-danger">X
       </button>
     </div>
     {% else %}
-    <div class=role="alert">
+    <div class="button is-success animate__animated animate__slideInLeft">
       {{ message }}
-      <button type="button" data-dismiss="alert" onclick=delete_flash(this)>
+      <button type="button" data-dismiss="alert" onclick=delete_flash(this) class="button is-success">X
       </button>
     </div>
     {% endif %} {% endfor %} {% endif %} {% endwith %}
