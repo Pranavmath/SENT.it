@@ -116,7 +116,8 @@ def signup():
         password = request.form.get("password")
         confirmpassword = request.form.get("confirmpassword")
         job = request.form.get("job")
-        location = [float(i) for i in request.form.get("loc").split(" ")]
+        # location = [float(i) for i in request.form.get("loc").split(" ")]
+        print(request.form.get("loc"))
 
         user = User.query.filter_by(email=email).first()
 
@@ -283,7 +284,9 @@ def communicate_medical():
     else:
         flash("Sorry but since you are not a medical practitioner you can't access that page.", category="error")
         return redirect(url_for("communicate_patient"))
-
+@app.route("/about", methods=["GET", 'POST'])
+def about():
+    return render_template("about.html", user=current_user)
 
 # Dict of all currently connected users and their socket id
 users = {}
