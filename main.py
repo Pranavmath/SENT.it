@@ -116,7 +116,7 @@ def signup():
         password = request.form.get("password")
         confirmpassword = request.form.get("confirmpassword")
         job = request.form.get("job")
-        # location = [float(i) for i in request.form.get("loc").split(" ")]
+        location = [i for i in request.form.get("loc").split(" ")]
         print(request.form.get("loc"))
 
         user = User.query.filter_by(email=email).first()
