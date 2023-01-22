@@ -9,6 +9,7 @@ from app import *
 import math
 from flask_socketio import *
 
+
 """
 Note: Since the model files are really big git lfs was used. 
 Since an error was originally thrown after using git lfs this stack overflow article was used to fix the error:
