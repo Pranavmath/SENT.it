@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block title %}Login{% endblock %} 
+{% block main%}
+<html lang="en">
+  <head>
+    <title>Communicate with Doctor</title>
+    <meta charset="utf-8">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/communicate.css') }}">
+  </head>
+
+  <body>
+     <h1 class="title">Login Page</h1>
+    <form method="POST" class="box">
+    <div class="block">
+      <label for="email" class="label">Email Address</label>
+      <input
+        type="email"
+        class="input"
+        id="email"
+        name="email"
+        placeholder="Enter email"
+      />
+    </div>
+    <div class="block">
+      <label for="password" class="label">Password</label>
+      <input
+        type="password"
+        class="input"
+        id="password"
+        name="password"
+        placeholder="Enter password"
+      />
+    </div>
+    <br><br>
+    <button type="submit" class="button is-primary" value="Send form"> Submit</button>
+    </form>
+  </body>
+</html>
+
+{% endblock %}

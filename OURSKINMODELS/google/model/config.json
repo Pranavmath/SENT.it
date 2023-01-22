@@ -1,0 +1,48 @@
+{
+  "_name_or_path": "google/vit-base-patch32-384",
+  "architectures": [
+    "ViTForImageClassification"
+  ],
+  "attention_probs_dropout_prob": 0.0,
+  "encoder_stride": 16,
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.0,
+  "hidden_size": 768,
+  "id2label": {
+    "0": "1. Eczema 1677",
+    "1": "10. Warts Molluscum and other Viral Infections - 2103",
+    "2": "2. Melanoma 15.75k",
+    "3": "3. Atopic Dermatitis - 1.25k",
+    "4": "4. Basal Cell Carcinoma (BCC) 3323",
+    "5": "5. Melanocytic Nevi (NV) - 7970",
+    "6": "6. Benign Keratosis-like Lesions (BKL) 2624",
+    "7": "7. Psoriasis pictures Lichen Planus and related diseases - 2k",
+    "8": "8. Seborrheic Keratoses and other Benign Tumors - 1.8k",
+    "9": "9. Tinea Ringworm Candidiasis and other Fungal Infections - 1.7k"
+  },
+  "image_size": 384,
+  "initializer_range": 0.02,
+  "intermediate_size": 3072,
+  "label2id": {
+    "1. Eczema 1677": "0",
+    "10. Warts Molluscum and other Viral Infections - 2103": "1",
+    "2. Melanoma 15.75k": "2",
+    "3. Atopic Dermatitis - 1.25k": "3",
+    "4. Basal Cell Carcinoma (BCC) 3323": "4",
+    "5. Melanocytic Nevi (NV) - 7970": "5",
+    "6. Benign Keratosis-like Lesions (BKL) 2624": "6",
+    "7. Psoriasis pictures Lichen Planus and related diseases - 2k": "7",
+    "8. Seborrheic Keratoses and other Benign Tumors - 1.8k": "8",
+    "9. Tinea Ringworm Candidiasis and other Fungal Infections - 1.7k": "9"
+  },
+  "layer_norm_eps": 1e-12,
+  "model_type": "vit",
+  "num_attention_heads": 12,
+  "num_channels": 3,
+  "num_hidden_layers": 12,
+  "patch_size": 32,
+  "problem_type": "single_label_classification",
+  "qkv_bias": true,
+  "torch_dtype": "float32",
+  "transformers_version": "4.24.0"
+}
