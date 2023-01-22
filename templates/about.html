@@ -2,14 +2,22 @@
 {% block main%}
 <html>
     <head>
-        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/home.css') }}">
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/about.css') }}">
+        <link rel="stylesheet" href="css/animate.css">
     </head>
     <body>
+        <script src="js/wow.min.js"></script>
+        <script>
+            new WOW().init();
+        </script>
         <h1 class="title animate__animated animate__backInDown" align="center">About</h1>
-        <div class="box">
+        <div class="box wow bounceInUp">
             <p class="paragraph">Skin, Throat, Ear, and Nose diseases and disorders are very common affecting a vast majority of the world population. We perceived this and pondered about how we could solve this problem. We came up with the idea to use Machine Learning to examine various pictures and diagnose them with a certain common disease/condition. We also wanted to implement this idea into an app that could take a picture of the site and utilize the said machine learning algorithm to diagnose it. There is a specific machine learning algorithm for each specialty and each one is a ViT The application consists of a front-end website/mobile application that the user can interact with and upload images and a back-end which is a server that runs the ViT. In the future, we want to increase the efficiency and accuracy of out ViT model and make it include nose, ear, and throat disorders and diseases.</p>
 
         </div>
+        <figure class="image is-128x128 box">
+            <img src="{{url_for('static', filename='Science-Fair-Icon.jpg')}}" align="middle" />
+        </figure>
     </body>
 </html>
 {% endblock %}
