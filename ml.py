@@ -26,8 +26,10 @@ classifier_google = VisionClassifierInference(
 # Givens 2 tuples: (Prediction, Probability) it gets the Tuple with higher probability
 def predict_2_ensemble(top_a, top_b):
     if top_a[0] == top_b[0]:
-        return top_a[0]
+        print("Top a and top b are the same")
+        return top_a
     else:
+        print("different")
         return [max([top_a, top_b], key=lambda a: a[1])[0], max([top_a, top_b], key=lambda a: a[1])[1]]
 
 
@@ -46,7 +48,9 @@ def ensemble_2(img_path):
 # Given PIL Image
 def predict(img):
     img.save("client_image.jpg")
-    return ensemble_2("client_image.jpg")
+    a = ensemble_2("client_image.jpg")
+
+    return a
 
 list_symptoms = ['itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering', 'chills',
                  'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting',
