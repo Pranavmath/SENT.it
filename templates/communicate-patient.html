@@ -10,9 +10,11 @@
 <body>
 
 <form action="" method="post">
-    {% for user in top %}
-        Do you want to chat with: <input type="submit" class="btn btn-primary" name="redirect" value="{{ user.firstname }}">
-        <br>
+
+    {% for user in top.keys() %}
+        Do you want to chat with: <input type="submit" class="button is-info" name="redirect" value="{{ user.firstname }}">
+        Distance between this doctor and you is {{ top[user] }} km
+        <br><br>
     {% endfor %}
 </form>
 

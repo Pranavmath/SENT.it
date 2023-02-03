@@ -5,11 +5,13 @@
     <title>Signup</title>
     <meta charset="utf-8">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/sign-up.css') }}">
+      <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   </head>
+
 <!--NOTE THIS IS THE SIGNUP FORM-->
   <body>
      <h1 class="title">Sign up</h1>
-    <form method="POST" class="box">
+    <form method="POST" class="box" id="form-sign-up" onsubmit="submitform(event);">
     <div class="block">
       <label for="firstname" class="label">First Name</label>
       <input
@@ -64,16 +66,33 @@
 
   <div class="block">
     <label for="job">Are you a medical Practitioner or a patient</label>
-    <select class="input" aria-label="Job" id="job" name="job">
+    <select class="input" aria-label="Job" id="job" name="job" onchange="test(this);">
       <option selected>Please select a value</option>
       <option value="medical">Medical Practitioner</option>
       <option value="patient">Patient</option>
     </select>
   </div>
 
+<div id="div-npi" style="display: none">
+    Please enter your NPI code:
+    <input id="npi">
+</div>
+
+<br><br>
+
+<script>
+    window.test = function(e) {
+      if (e.value === 'medical') {
+        document.getElementById('div-npi').style.display = "block";
+      } else {
+          document.getElementById('div-npi').style.display = "none";
+      }
+    }
+</script>
+
   <div class="block">
     <label for="location">Location</label>
-    <button type="button" class="button is-primary" onclick="getlocation()" id="location">
+    <button type="button" class="button is-primary" onclick="getlocation()" id="locationbutton">
       Get Location
     </button>
 
@@ -83,31 +102,72 @@
 
     <input type='hidden' id='location' name='loc' value='' />
       
-      <script>
-        var variable1 = document.getElementById("loc");
-        var variable2 = document.getElementById("location");
-        
-        function getlocation() {
-          // change button to loading
-          document.getElementById("location").classList.add("is-loading");
-          navigator.geolocation.getCurrentPosition(showLoc);
-          document.getElementById("location").classList.add("is-success");
-          // change back to normal
-        }
-        function showLoc(pos) {
-          variable2.value = pos.coords.latitude + " " + pos.coords.longitude;
-          variable1.innerHTML =
-            "Latitude: " +
-            pos.coords.latitude +
-            "<br>Longitude: " +
-            pos.coords.longitude;
-          document.getElementById("location").classList.remove("is-loading");
-        }
-      </script>
+    <script>
+    var variable1 = document.getElementById("loc");
+    var variable2 = document.getElementById("location");
+
+    function getlocation() {
+      // change button to loading
+      document.getElementById("location").classList.add("is-loading");
+      navigator.geolocation.getCurrentPosition(showLoc);
+      document.getElementById("location").classList.add("is-success");
+      // change back to normal
+    }
+    function showLoc(pos) {
+      variable2.value = pos.coords.latitude + " " + pos.coords.longitude;
+      variable1.innerHTML =
+        "Latitude: " +
+        pos.coords.latitude +
+        "<br>Longitude: " +
+        pos.coords.longitude;
+      document.getElementById("locationbutton").classList.remove("is-loading");
+    }
+    </script>
   </div>
   
   <br><br>
-    <button type="submit" class="button is-primary"> Submit</button>
+    <button type="submit" class="button is-primary">Submit</button>
+        <script>
+            function submitform(){
+                event.preventDefault();
+
+                var e = document.getElementById("job");
+                var value = e.value;
+
+                if (value === 'medical') {
+                    let npi =  parseInt(document.getElementById("npi").value);
+
+                    $.ajax({
+                      data : {
+                        number : npi
+                      },
+                      type : 'POST',
+                      url : '/npi'
+                    })
+                    .done(function(data){
+                        if(data.hasOwnProperty('result_count')){
+                            if (data["result_count"] > 0) {
+                              document.getElementById("form-sign-up").submit();
+                            } else {
+                                swal({
+                                    title: "Please enter a valid NPI",
+                                    icon: "error"
+                                })
+                                return false;
+                            }
+                        } else {
+                            swal({
+                                title: "Please enter a valid NPI",
+                                icon: "error"
+                            })
+                            return false;
+                        }
+                    });
+                } else {
+                    document.getElementById("form-sign-up").submit();
+                }
+            }
+        </script>
     </form>
   </body>
 </html>

@@ -1,0 +1,87 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} 
+{% block main%}
+<head>
+    <script src = "https://use.fontawesome.com/releases/v5.1.0/js/all.js"></script>
+</head>
+<h1 class="title" align="center">Submit your images here:</h1>
+
+<div class="is-primary">
+    <form method = "POST" enctype = "multipart/form-data">
+        <input value="image" type="hidden" name="form_type">
+
+        <div>
+            <label class="file-label">
+            <input type="file" name="image" class="file-input" accept="image/jpeg">
+            <span class="file-cta">
+              <span class="file-icon">
+                <i class="fas fa-upload"></i>
+              </span>
+              <span class="file-label">
+                Choose a file…
+              </span>
+            </span>
+
+            &nbsp&nbsp&nbsp&nbsp&nbsp
+
+            <button type="submit" class="button is-primary">Submit</button>
+            </label>
+
+            <br>
+        </div>
+
+    </form>
+</div>
+
+<style>
+img {
+    width: 25%;
+    height: 25%;
+}
+</style>
+
+<script>
+$("input").change(function(e) {
+
+    for (var i = 0; i < e.originalEvent.srcElement.files.length; i++) {
+
+        var file = e.originalEvent.srcElement.files[i];
+
+        var img = document.createElement("img");
+        var reader = new FileReader();
+        reader.onloadend = function() {
+             img.src = reader.result;
+        }
+        reader.readAsDataURL(file);
+        $("div").after(img);
+    }
+});
+</script>
+
+{% if (predict==[None, None]) %}
+  <h1></h1>
+{% else %}
+  <h1>We think you have {{predict[0]}} with an accuracy of {{predict[1] * 100}}%</h1>
+
+<br>
+
+If you would like a message to be sent to one of the following doctors please click on one of them:
+
+<form action="" method="post">
+
+<input value = "followup" type="hidden" name="form_type">
+
+<input value = "{{ predict[0] }}" type="hidden" name="disease">
+<input value = "{{ predict[1] }}" type="hidden" name="probability">
+
+
+{% for user in top.keys() %}
+    Do you want to chat with: <input type="submit" class="button is-info" name="redirect" value="{{ user.firstname }}">
+    Distance between this doctor and you is {{ top[user] }} km
+    <br><br>
+{% endfor %}
+
+</form>
+
+{% endif %}
+
+{% endblock %}

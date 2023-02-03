@@ -1,12 +1,45 @@
 {% extends "base.html" %} {% block title %}Communicate{% endblock %} 
 {% block main%}
 <html lang="en">
-<h1>Symptoms Checker</h1>
+<h1 class="title" align="center">Symptoms Checker</h1>
+
+<br>
+
+{% if (predict==None) %}
+  <h1></h1>
+{% else %}
+<h1>We think you have {{predict}} after analyzing your symptoms</h1>
+
+<br>
+
+If you would like a message to be sent to one of the following doctors please click on one of them:
+
+<form action="" method="post">
+
+<input value = "followup" type="hidden" name="form_type">
+
+<input value = "{{ predict }}" type="hidden" name="disease">
+
+
+{% for user in top.keys() %}
+    Do you want to chat with: <input type="submit" class="button is-info" name="redirect" value="{{ user.firstname }}">
+    Distance between this doctor and you is {{ top[user] }} km
+    <br><br>
+{% endfor %}
+
+</form>
+
+{% endif %}
+
+<br>
+
+
+<label>List of Symptoms</label>
 
 <form method="POST">
+<div class="select is-multiple form-group">
+  <input value = "symptoms" type="hidden" name="form_type">
 
-<div class="form-group">
-  <label for="exampleFormControlSelect2">Example multiple select</label>
   <select multiple class="form-control" id="multiselect" name="multiselect" size="132" style="height: 100%;">
     <option>itching</option>
     <option>skin_rash</option>
@@ -142,8 +175,12 @@
     <option>yellow_crust_ooze</option>
   </select>
 </div>
-  
-<button type="submit" class="btn btn-primary"> Submit</button>
+
+<br><br>
+
+<div>
+    <button type="submit" class="button is-success"> Submit</button>
+</div>
 
 </form>
 
