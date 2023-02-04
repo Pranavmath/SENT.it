@@ -146,6 +146,8 @@ def image_page():
 
             prediction = predict(img)  # EX: prediction = ["Melanoma, 0.89"]
 
+            prediction = [prediction[0], round(prediction[1], 2)]
+
             return render_template('image.html', predict=prediction, user=current_user, top=top_3)
         if request.form.get("form_type") == "followup":
             sendto_firstname = request.form['redirect']
