@@ -61,26 +61,26 @@ app.app_context()
 def add_practitioners():
     # Medical practitioners:
     user1 = User(email="a@email.com",
-                 firstname="ADoctor",
+                 firstname="Alice",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[25.980, -80.277])
     user2 = User(email="b@email.com",
-                 firstname="BDoctor",
+                 firstname="Bob",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[26.626, -81.736])
     user3 = User(email="c@email.com",
-                 firstname="CDoctor",
+                 firstname="Carl",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[28.481, -81.339])
     user4 = User(email="d@email.com",
-                 firstname="DDoctor",
-                 lastname="Bruh",
+                 firstname="Dave",
+                 lastname="vit",
                  password=generate_password_hash("1234567", method='sha256'),
                  job="Medical Practitioner",
                  location=[40.398, -3.608])
@@ -168,6 +168,7 @@ def image_page():
             # If they sent messages then get the list of messages
             if m:
                 m.messages.append(prompt)
+
                 db.session.commit()
             # If they have not sent any messages between each other than make the messages an empty list
             else:
@@ -210,8 +211,6 @@ def signup():
 
         try:
             location = [float(i) for i in request.form.get("loc").split(" ")]
-
-            print(location)
         except:
             flash("Please enter a valid location", category="error")
 
@@ -341,9 +340,6 @@ def get_top_3():
         distance = round(degtokm(patient_location[0], patient_location[1], med_location[0], med_location[1]), 2)
         distances[med] = distance
 
-    for i in distances.keys():
-        print(i.location)
-
     # This gets the top_3 closet medical practitioners
     top_3 = dict(sorted(distances.items(), key=lambda x: x[1])[:3])
 
@@ -358,8 +354,6 @@ def communicate_patient():
         # This is the dict with all the medical practitioners - key and their distances from the patient - value
 
         top_3 = get_top_3()
-
-        print(top_3)
 
         # This gets run they click on the button to communicate to a specific medical practitioner
         if request.method == "POST":
