@@ -23,10 +23,22 @@ classifier_google = VisionClassifierInference(
 )
 
 
+image_onehot_encoder = {'3. Atopic Dermatitis - 1.25k': 'Atopic Dermatitis',
+'10. Warts Molluscum and other Viral Infections - 2103': 'Warts Molluscum and other Viral Infections',
+'1. Eczema 1677': 'Eczema',
+'8. Seborrheic Keratoses and other Benign Tumors - 1.8k': 'Seborrheic Keratoses and other Benign Tumors',
+'5. Melanocytic Nevi (NV) - 7970': 'Melanocytic Nevi (NV)',
+'2. Melanoma 15.75k': 'Melanoma',
+'9. Tinea Ringworm Candidiasis and other Fungal Infections - 1.7k': 'Tinea Ringworm Candidiasis and other Fungal Infections',
+'4. Basal Cell Carcinoma (BCC) 3323': 'Basal Cell Carcinoma (BCC)',
+'7. Psoriasis pictures Lichen Planus and related diseases - 2k': 'Psoriasis, Lichen Planus, or related diseases',
+'6. Benign Keratosis-like Lesions (BKL) 2624': 'Benign Keratosis-like Lesions (BKL)'
+}
+
 # Givens 2 tuples: (Prediction, Probability) it gets the Tuple with higher probability
 def predict_2_ensemble(top_a, top_b):
     if top_a[0] == top_b[0]:
-        return top_a[0]
+        return top_a
     else:
         return [max([top_a, top_b], key=lambda a: a[1])[0], max([top_a, top_b], key=lambda a: a[1])[1]]
 
@@ -46,7 +58,9 @@ def ensemble_2(img_path):
 # Given PIL Image
 def predict(img):
     img.save("client_image.jpg")
-    return ensemble_2("client_image.jpg")
+    prediction = ensemble_2("client_image.jpg")
+
+    return [image_onehot_encoder[prediction[0]], round(prediction[1], 2)]
 
 list_symptoms = ['itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering', 'chills',
                  'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting',

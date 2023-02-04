@@ -60,7 +60,7 @@ $("input").change(function(e) {
 {% if (predict==[None, None]) %}
   <h1></h1>
 {% else %}
-  <h1>We think you have {{predict[0]}} with an accuracy of {{predict[1] * 100}}%</h1>
+  <h1>We think you have {{predict[0]}} with an accuracy of {{predict[1]}}%</h1>
 
 <br>
 

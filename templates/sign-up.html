@@ -68,7 +68,7 @@
     <label for="job">Are you a medical Practitioner or a patient</label>
     <select class="input" aria-label="Job" id="job" name="job" onchange="test(this);">
       <option selected>Please select a value</option>
-      <option value="medical">Medical Practitioner</option>
+      <option value="Medical Practitioner">Medical Practitioner</option>
       <option value="patient">Patient</option>
     </select>
   </div>
@@ -82,7 +82,7 @@
 
 <script>
     window.test = function(e) {
-      if (e.value === 'medical') {
+      if (e.value === 'Medical Practitioner') {
         document.getElementById('div-npi').style.display = "block";
       } else {
           document.getElementById('div-npi').style.display = "none";
@@ -134,7 +134,7 @@
                 var e = document.getElementById("job");
                 var value = e.value;
 
-                if (value === 'medical') {
+                if (value === 'Medical Practitioner') {
                     let npi =  parseInt(document.getElementById("npi").value);
 
                     $.ajax({
