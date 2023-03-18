@@ -61,26 +61,26 @@ app.app_context()
 def add_practitioners():
     # Medical practitioners:
     user1 = User(email="a@email.com",
-                 firstname="ADoctor",
+                 firstname="Alice",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[25.980, -80.277])
     user2 = User(email="b@email.com",
-                 firstname="BDoctor",
+                 firstname="Bob",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[26.626, -81.736])
     user3 = User(email="c@email.com",
-                 firstname="CDoctor",
+                 firstname="Carl",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[28.481, -81.339])
     user4 = User(email="d@email.com",
-                 firstname="DDoctor",
-                 lastname="Bruh",
+                 firstname="Dave",
+                 lastname="vit",
                  password=generate_password_hash("1234567", method='sha256'),
                  job="Medical Practitioner",
                  location=[40.398, -3.608])
