@@ -8,7 +8,12 @@
 {% if (predict==None) %}
   <h1></h1>
 {% else %}
-<h1>We think you have {{predict}} after analyzing your symptoms</h1>
+    {% for i in range( predict|length ) %}
+        {% set disease_tuple = predict[i] %}
+        <h1>For the top {{i + 1}} disease: We think you have {{disease_tuple[0]}} with an accuracy of {{100 * disease_tuple[1][1]}}%</h1>
+        <h1>Here are the symptoms in our database for this disease: {{ disease_tuple[1][0]}}</h1>
+        <br>
+    {% endfor %}
 
 <br>
 
@@ -18,7 +23,7 @@ If you would like a message to be sent to one of the following doctors please cl
 
 <input value = "followup" type="hidden" name="form_type">
 
-<input value = "{{ predict }}" type="hidden" name="disease">
+<input value = "{{ predict }}" type="hidden" name="top_5_prediction">
 
 
 {% for user in top.keys() %}
@@ -33,156 +38,69 @@ If you would like a message to be sent to one of the following doctors please cl
 
 <br>
 
+<!-- Below this is the symptoms chooser-->
 
-<label>List of Symptoms</label>
+<label>Enter your Symptoms</label>
 
 <form method="POST">
-<div class="select is-multiple form-group">
-  <input value = "symptoms" type="hidden" name="form_type">
+    <input value = "symptoms" type="hidden" name="form_type">
 
-  <select multiple class="form-control" id="multiselect" name="multiselect" size="132" style="height: 100%;">
-    <option>itching</option>
-    <option>skin_rash</option>
-    <option>nodal_skin_eruptions</option>
-    <option>continuous_sneezing</option>
-    <option>shivering</option>
-    <option>chills</option>
-    <option>joint_pain</option>
-    <option>stomach_pain</option>
-    <option>acidity</option>
-    <option>ulcers_on_tongue</option>
-    <option>muscle_wasting</option>
-    <option>vomiting</option>
-    <option>burning_micturition</option>
-    <option>spotting_ urination</option>
-    <option>fatigue</option>
-    <option>weight_gain</option>
-    <option>anxiety</option>
-    <option>cold_hands_and_feets</option>
-    <option>mood_swings</option>
-    <option>weight_loss</option>
-    <option>restlessness</option>
-    <option>lethargy</option>
-    <option>patches_in_throat</option>
-    <option>irregular_sugar_level</option>
-    <option>cough</option>
-    <option>high_fever</option>
-    <option>sunken_eyes</option>
-    <option>breathlessness</option>
-    <option>sweating</option>
-    <option>dehydration</option>
-    <option>indigestion</option>
-    <option>headache</option>
-    <option>yellowish_skin</option>
-    <option>dark_urine</option>
-    <option>nausea</option>
-    <option>loss_of_appetite</option>
-    <option>pain_behind_the_eyes</option>
-    <option>back_pain</option>
-    <option>constipation</option>
-    <option>abdominal_pain</option>
-    <option>diarrhoea</option>
-    <option>mild_fever</option>
-    <option>yellow_urine</option>
-    <option>yellowing_of_eyes</option>
-    <option>acute_liver_failure</option>
-    <option>fluid_overload</option>
-    <option>swelling_of_stomach</option>
-    <option>swelled_lymph_nodes</option>
-    <option>malaise</option>
-    <option>blurred_and_distorted_vision</option>
-    <option>phlegm</option>
-    <option>throat_irritation</option>
-    <option>redness_of_eyes</option>
-    <option>sinus_pressure</option>
-    <option>runny_nose</option>
-    <option>congestion</option>
-    <option>chest_pain</option>
-    <option>weakness_in_limbs</option>
-    <option>fast_heart_rate</option>
-    <option>pain_during_bowel_movements</option>
-    <option>pain_in_anal_region</option>
-    <option>bloody_stool</option>
-    <option>irritation_in_anus</option>
-    <option>neck_pain</option>
-    <option>dizziness</option>
-    <option>cramps</option>
-    <option>bruising</option>
-    <option>obesity</option>
-    <option>swollen_legs</option>
-    <option>swollen_blood_vessels</option>
-    <option>puffy_face_and_eyes</option>
-    <option>enlarged_thyroid</option>
-    <option>brittle_nails</option>
-    <option>swollen_extremeties</option>
-    <option>excessive_hunger</option>
-    <option>extra_marital_contacts</option>
-    <option>drying_and_tingling_lips</option>
-    <option>slurred_speech</option>
-    <option>knee_pain</option>
-    <option>hip_joint_pain</option>
-    <option>muscle_weakness</option>
-    <option>stiff_neck</option>
-    <option>swelling_joints</option>
-    <option>movement_stiffness</option>
-    <option>spinning_movements</option>
-    <option>loss_of_balance</option>
-    <option>unsteadiness</option>
-    <option>weakness_of_one_body_side</option>
-    <option>loss_of_smell</option>
-    <option>bladder_discomfort</option>
-    <option>foul_smell_of urine</option>
-    <option>continuous_feel_of_urine</option>
-    <option>passage_of_gases</option>
-    <option>internal_itching</option>
-    <option>toxic_look_(typhos)</option>
-    <option>depression</option>
-    <option>irritability</option>
-    <option>muscle_pain</option>
-    <option>altered_sensorium</option>
-    <option>red_spots_over_body</option>
-    <option>belly_pain</option>
-    <option>abnormal_menstruation</option>
-    <option>dischromic _patches</option>
-    <option>watering_from_eyes</option>
-    <option>increased_appetite</option>
-    <option>polyuria</option>
-    <option>family_history</option>
-    <option>mucoid_sputum</option>
-    <option>rusty_sputum</option>
-    <option>lack_of_concentration</option>
-    <option>visual_disturbances</option>
-    <option>receiving_blood_transfusion</option>
-    <option>receiving_unsterile_injections</option>
-    <option>coma</option>
-    <option>stomach_bleeding</option>
-    <option>distention_of_abdomen</option>
-    <option>history_of_alcohol_consumption</option>
-    <option>fluid_overload.1</option>
-    <option>blood_in_sputum</option>
-    <option>prominent_veins_on_calf</option>
-    <option>palpitations</option>
-    <option>painful_walking</option>
-    <option>pus_filled_pimples</option>
-    <option>blackheads</option>
-    <option>scurring</option>
-    <option>skin_peeling</option>
-    <option>silver_like_dusting</option>
-    <option>small_dents_in_nails</option>
-    <option>inflammatory_nails</option>
-    <option>blister</option>
-    <option>red_sore_around_nose</option>
-    <option>yellow_crust_ooze</option>
-  </select>
-</div>
+    <div class="select">
+        <select class="select is-primary is-medium" name="typediseasedropdown">
+            <option>Please choose which type of disease you might have (This helps speeds up the search)</option>
+            <option>Skin</option>
+            <option>Ear</option>
+            <option>Oral</option>
+            <option>Nose</option>
+        </select>
+    </div>
 
-<br><br>
+    <br><br><br>
 
-<div>
-    <button type="submit" class="button is-success"> Submit</button>
-</div>
+    <div id="symptoms-section">
+        <button id="newsymptombtn" class="button is-success" type="button">Add a new Symptom</button>
+        <button id="delsymptombtn" class="button is-success" type="button">Delete the last Symptom</button>
 
+        <br><br>
+        <div id="mainsymptom-group" class="block">
+            <span class="tag is-info is-large" id="symptom-span">Symptom 1</span>
+            <textarea id="symptom-textarea" name="formtextarea[]" class="input is-info" type="text" placeholder="Type your symptom" rows="1"></textarea>
+        </div>
+    </div>
+
+    <br><br>
+
+    <div>
+        <button type="submit" class="button is-success"> Submit</button>
+    </div>
 </form>
+
+<script>
+    var num_symptoms = 1;
+    document.getElementById("newsymptombtn").onclick = function() {
+        num_symptoms += 1;
+
+        var symptoms_section = document.getElementById("symptoms-section");
+        var section = document.getElementById("mainsymptom-group");
+
+        var new_section = section.cloneNode(true);
+
+        new_section.querySelector("#symptom-span").innerHTML = "Symptom " + num_symptoms
+        new_section.querySelector("#symptom-textarea").value = ""
+
+        symptoms_section.appendChild(new_section);
+    }
+
+    document.getElementById("delsymptombtn").onclick = function() {
+        var symptoms_section = document.getElementById("symptoms-section");
+
+        if (num_symptoms > 1) {
+            num_symptoms -= 1;
+            symptoms_section.removeChild(symptoms_section.lastChild);
+        }
+    }
+</script>
+
 
 </html>
 

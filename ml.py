@@ -1,122 +1,247 @@
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
+from transformers import ViTFeatureExtractor
+from transformers import ViTForImageClassification
 
-saved_model = keras.models.load_model("model")
+labels = ['Acne and Rosacea Photos', 'Actinic cheilitis', 'Normal Skin', 'acanthosis nigricans', 'actinic keratosis',
+          'alopecia', 'angiokeratoma', 'atopic dermatitis', 'atypical melanocytic proliferation',
+          'basal cell carcinoma', 'biting insects', 'bowens disease', 'bullous disease', 'candida', 'candidiasis',
+          'chondrodermatitis nodularis', 'ctcl', 'cutaneceous larva migrans', 'dermatofibroma',
+          'distal subungual onychomycosis', 'drug eruptions', 'eczema', 'epidermal cyst', 'fixed drug eruption',
+          'folliculitis', 'granuloma annulare', 'hemangioma', 'herpes', 'impetigo', 'intertrigo', 'keloids',
+          'keratoacanthoma', 'lentigo', 'lichen planus', 'lichenoid keratosis', 'lupus', 'melanocytic nevi', 'melanoma',
+          'molluscum contagiosum', 'necrobiosis lipoidica', 'neurofibromatosis', 'nevus',
+          'other connective tissue diseases', 'other lichen related diseases', 'other light diseases',
+          'other nail related diseases', 'other psoraisis related diseases', 'perleche', 'pigmented benign keratosis',
+          'pityriasis and related diseases', 'poison ivy related diseases', 'porokeratosis', 'psoriasis', 'pubic lice',
+          'pyogenic granuloma', 'scabies', 'scar', 'sebaceous hyperplasia', 'seborrheic dermatitis',
+          'seborrheic keratosis', 'skin tag polyps', 'solar lentigo', 'squamous cell carcinoma', 'stucco keretoses',
+          'sunburn', 'syringoma', 'telangiectasias', 'tick bite', 'tinea', 'tuberous sclerosis', 'urticaria',
+          'varicella', 'vascular lesion', 'vasculitis', 'venous diseases', 'viral exanthems', 'warts', 'xanthomas']
 
-from transformers import ViTFeatureExtractor, ViTForImageClassification
-from hugsvision.inference.VisionClassifierInference import VisionClassifierInference
-from transformers import BeitFeatureExtractor, BeitForImageClassification
-
-path_beit = "OURSKINMODELS/beit/model"
-path_google = "OURSKINMODELS/google/model"
-
-# Loads Models
-classifier_beit = VisionClassifierInference(
-    feature_extractor=BeitFeatureExtractor.from_pretrained(path_beit),
-    model=BeitForImageClassification.from_pretrained(path_beit),
+vit_model = ViTForImageClassification.from_pretrained(
+    "skinmodels/vit-base-SKINMODEL",
+    num_labels=len(labels),
+    id2label={str(i): c for i, c in enumerate(labels)},
+    label2id={c: str(i) for i, c in enumerate(labels)},
+    ignore_mismatched_sizes=True
 )
 
-classifier_google = VisionClassifierInference(
-    feature_extractor=ViTFeatureExtractor.from_pretrained(path_google),
-    model=ViTForImageClassification.from_pretrained(path_google),
+deit_model = ViTForImageClassification.from_pretrained(
+    "skinmodels/deit-base-SKINMODEL",
+    num_labels=len(labels),
+    id2label={str(i): c for i, c in enumerate(labels)},
+    label2id={c: str(i) for i, c in enumerate(labels)},
+    ignore_mismatched_sizes=True
 )
 
+vit_feature_extractor = ViTFeatureExtractor.from_pretrained("skinmodels/vit-base-SKINMODEL")
 
-image_onehot_encoder = {'3. Atopic Dermatitis - 1.25k': 'Atopic Dermatitis',
-'10. Warts Molluscum and other Viral Infections - 2103': 'Warts Molluscum and other Viral Infections',
-'1. Eczema 1677': 'Eczema',
-'8. Seborrheic Keratoses and other Benign Tumors - 1.8k': 'Seborrheic Keratoses and other Benign Tumors',
-'5. Melanocytic Nevi (NV) - 7970': 'Melanocytic Nevi (NV)',
-'2. Melanoma 15.75k': 'Melanoma',
-'9. Tinea Ringworm Candidiasis and other Fungal Infections - 1.7k': 'Tinea Ringworm Candidiasis and other Fungal Infections',
-'4. Basal Cell Carcinoma (BCC) 3323': 'Basal Cell Carcinoma (BCC)',
-'7. Psoriasis pictures Lichen Planus and related diseases - 2k': 'Psoriasis, Lichen Planus, or related diseases',
-'6. Benign Keratosis-like Lesions (BKL) 2624': 'Benign Keratosis-like Lesions (BKL)'
-}
+deit_feature_extractor = ViTFeatureExtractor.from_pretrained("skinmodels/deit-base-SKINMODEL")
 
-# Givens 2 tuples: (Prediction, Probability) it gets the Tuple with higher probability
-def predict_2_ensemble(top_a, top_b):
-    if top_a[0] == top_b[0]:
-        return top_a
+
+# Keeps a from 0 to 1
+def norm(a):
+    return min(max(a, 0), 1)
+
+
+def run_vit(PIL_Image):
+    inputs = vit_feature_extractor(images=PIL_Image, return_tensors="pt")
+    outputs = vit_model(**inputs)
+    logits = outputs.logits
+
+    top_5_class_idx = np.array(logits.argsort())[0][::-1][:5]
+
+    top_5_class = [(vit_model.config.id2label[str(class_idx)],
+                    norm(logits[0][class_idx].item() / 10)) for class_idx in top_5_class_idx]
+
+    return top_5_class
+
+
+def run_deit(PIL_Image):
+    inputs = deit_feature_extractor(images=PIL_Image, return_tensors="pt")
+    outputs = deit_model(**inputs)
+    logits = outputs.logits
+
+    top_5_class_idx = np.array(logits.argsort())[0][::-1][:5]
+
+    top_5_class = [(vit_model.config.id2label[str(class_idx)],
+                    norm(logits[0][class_idx].item() / 10)) for class_idx in top_5_class_idx]
+
+    return top_5_class
+
+
+def ensemble_2(t1, t2):
+    if t1[0] == t2[0]:
+        return (t1[0], (t1[1] + t2[1]) / 2)
     else:
-        return [max([top_a, top_b], key=lambda a: a[1])[0], max([top_a, top_b], key=lambda a: a[1])[1]]
+        if t1[1] >= t2[1]:
+            return (t1[0], t1[1])
+        if t1[1] < t2[1]:
+            return (t2[0], t2[1])
 
 
-# Applies the ensemble to the 2 models
-def ensemble_2(img_path):
-    label_beit = classifier_beit.predict(img_path=img_path, return_str=False)
-    label_google = classifier_google.predict(img_path=img_path, return_str=False)
-    label_beit = {k: v for k, v in sorted(label_beit.items(), key=lambda item: item[1], reverse=True)}
-    label_google = {k: v for k, v in sorted(label_google.items(), key=lambda item: item[1], reverse=True)}
-    top_beit = list(label_beit.items())[0]
-    top_google = list(label_google.items())[0]
+def predict(PIL_Image):
+    deit_predicition = run_deit(PIL_Image)
+    vit_prediction = run_vit(PIL_Image)
 
-    return predict_2_ensemble(top_beit, top_google)
+    ensemble_prediction = []
 
+    for idx in range(len(vit_prediction)):
+        ensemble_prediction.append(ensemble_2(vit_prediction[idx], deit_predicition[idx]))
 
-# Given PIL Image
-def predict(img):
-    img.save("client_image.jpg")
-    prediction = ensemble_2("client_image.jpg")
-
-    return [image_onehot_encoder[prediction[0]], round(prediction[1], 2)]
-
-list_symptoms = ['itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering', 'chills',
-                 'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting',
-                 'burning_micturition', 'spotting_ urination', 'fatigue', 'weight_gain', 'anxiety',
-                 'cold_hands_and_feets', 'mood_swings', 'weight_loss', 'restlessness', 'lethargy', 'patches_in_throat',
-                 'irregular_sugar_level', 'cough', 'high_fever', 'sunken_eyes', 'breathlessness', 'sweating',
-                 'dehydration', 'indigestion', 'headache', 'yellowish_skin', 'dark_urine', 'nausea', 'loss_of_appetite',
-                 'pain_behind_the_eyes', 'back_pain', 'constipation', 'abdominal_pain', 'diarrhoea', 'mild_fever',
-                 'yellow_urine', 'yellowing_of_eyes', 'acute_liver_failure', 'fluid_overload', 'swelling_of_stomach',
-                 'swelled_lymph_nodes', 'malaise', 'blurred_and_distorted_vision', 'phlegm', 'throat_irritation',
-                 'redness_of_eyes', 'sinus_pressure', 'runny_nose', 'congestion', 'chest_pain', 'weakness_in_limbs',
-                 'fast_heart_rate', 'pain_during_bowel_movements', 'pain_in_anal_region', 'bloody_stool',
-                 'irritation_in_anus', 'neck_pain', 'dizziness', 'cramps', 'bruising', 'obesity', 'swollen_legs',
-                 'swollen_blood_vessels', 'puffy_face_and_eyes', 'enlarged_thyroid', 'brittle_nails',
-                 'swollen_extremeties', 'excessive_hunger', 'extra_marital_contacts', 'drying_and_tingling_lips',
-                 'slurred_speech', 'knee_pain', 'hip_joint_pain', 'muscle_weakness', 'stiff_neck', 'swelling_joints',
-                 'movement_stiffness', 'spinning_movements', 'loss_of_balance', 'unsteadiness',
-                 'weakness_of_one_body_side', 'loss_of_smell', 'bladder_discomfort', 'foul_smell_of urine',
-                 'continuous_feel_of_urine', 'passage_of_gases', 'internal_itching', 'toxic_look_(typhos)',
-                 'depression', 'irritability', 'muscle_pain', 'altered_sensorium', 'red_spots_over_body', 'belly_pain',
-                 'abnormal_menstruation', 'dischromic _patches', 'watering_from_eyes', 'increased_appetite', 'polyuria',
-                 'family_history', 'mucoid_sputum', 'rusty_sputum', 'lack_of_concentration', 'visual_disturbances',
-                 'receiving_blood_transfusion', 'receiving_unsterile_injections', 'coma', 'stomach_bleeding',
-                 'distention_of_abdomen', 'history_of_alcohol_consumption', 'fluid_overload.1', 'blood_in_sputum',
-                 'prominent_veins_on_calf', 'palpitations', 'painful_walking', 'pus_filled_pimples', 'blackheads',
-                 'scurring', 'skin_peeling', 'silver_like_dusting', 'small_dents_in_nails', 'inflammatory_nails',
-                 'blister', 'red_sore_around_nose', 'yellow_crust_ooze']
-
-onehot_encoder_inputs = {l: i for i, l in enumerate(list_symptoms)}
-onehot_encoder_labels = {'Fungal infection': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Allergy': [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Bronchial Asthma': [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Jaundice': [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Malaria': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Chicken pox': [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Dengue': [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Typhoid': [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], 'Tuberculosis': [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], 'Common Cold': [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], 'Pneumonia': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], 'Varicose veins': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], '(vertigo) Paroymsal  Positional Vertigo': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], 'Acne': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0], 'Psoriasis': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0], 'Impetigo': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]}
+    return ensemble_prediction
 
 
-def onehot_encode_inputs(inputs):
-    inital = [0] * 132
+# --------------------------------
+# Symptoms model below:
 
-    for input in inputs:
-        inital[onehot_encoder_inputs[input]] = 1
+import tensorflow_hub as hub
+from sklearn import metrics
+import gzip
+import json
+import scipy
+import numpy as np
+import warnings
+from time import time
+from numpy.linalg import norm
+from numba import njit, prange, jit
+import pandas as pd
+import pickle
+from transformers import pipeline
+import math
 
-    return inital
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+
+embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
 
-# Given numpy array with shape (132, ) return the prediction
-def predict_array(nparr):
-    if nparr.dtype != np.float32:
-        raise Exception("Your input numpy array must have a dtype of float32")
+@njit
+def cosine_similarity(np_array_a, np_array_b):
+    return np.dot(np_array_a, np_array_b) / (norm(np_array_a) * norm(np_array_b))
 
-    tensor = tf.convert_to_tensor([nparr])
-    predict = saved_model.predict(tensor)
 
-    predict_list = list(predict)[0]
+@njit
+def mean(l):
+    return sum(l) / len(l)
 
-    sorted_predict = sorted({i: predict_list[i] for i in range(len(predict_list))}.items(), key=lambda i: i[1],
-                            reverse=True)
 
-    index_prediction = sorted_predict[0][0]
+@njit
+def metric_MIFTS(MIFTS):
+    a = 7
+    k = 2
 
-    prediction = list(onehot_encoder_labels.keys())[index_prediction]
+    if (MIFTS <= 75):
+        return (k / (a - 1)) * (a ** ((100 - MIFTS) / 100) - 1)
+    else:
+        return (-1 / 300) * (MIFTS - 75) + 0.2089
 
-    return prediction
+
+@njit
+def std(l, mean):
+    if len(l) == 1:
+        return 0
+    else:
+        return math.sqrt(sum([(i - mean) ** 2 for i in l]) / (len(l) - 1))
+
+
+@njit
+def similarity(list_symptoms1, list_symptoms2):
+    if len(list_symptoms1) < len(list_symptoms2):
+        a = list_symptoms1
+        b = list_symptoms2
+    else:
+        a = list_symptoms2
+        b = list_symptoms1
+
+    cos_similarties_a = []
+
+    for a_i in prange(len(a)):
+        array_a = a[a_i]
+
+        max_cos_sim_a = 0
+
+        for b_i in prange(len(b)):
+            array_b = b[b_i]
+
+            cos_similarity = cosine_similarity(array_a, array_b)
+            if cos_similarity > max_cos_sim_a:
+                max_cos_sim_a = cos_similarity
+
+        cos_similarties_a.append(max_cos_sim_a)
+
+    return cos_similarties_a
+
+
+def get_disease(symptoms_emb_nparr, npzfile, MIFTS_disease):
+    disease_sims = {}
+
+    getting_symptoms_time = 0
+    similairty_time = 0
+
+    for disease_index in range(len(npzfile.keys())):
+        disease = list(npzfile.keys())[disease_index]
+
+        MIFTS = MIFTS_disease[disease]
+
+        disease_emb_nparr = npzfile[disease]
+
+        cos_sims = similarity(symptoms_emb_nparr, disease_emb_nparr)
+
+        mean_cos_sim = mean(cos_sims)
+        std_cos_sim = std(cos_sims, mean_cos_sim)
+
+        # Number of disease symptoms that don't link up to the user's symptoms
+        num_nomatchsymps = abs(len(disease_emb_nparr) - len(symptoms_emb_nparr))
+
+        # More no match symptoms means that the metic increases so the disease is a worse diagnosis
+        metric = (1 - mean_cos_sim) + (num_nomatchsymps / 6) + (std_cos_sim / 4) + metric_MIFTS(MIFTS)
+
+        disease_sims[disease] = metric
+
+    return dict(sorted(disease_sims.items(), key=lambda item: item[1]))
+
+
+# Load gzipped json
+def load(type_disease):
+    with gzip.open(f"symptomsfiles/best_{type_disease}.json.gz", 'rt', encoding='utf-8') as f:
+        data = json.load(f)
+
+    return data
+
+
+# Given a list of dicts where each dict has the disease as a key and the list of symptoms as its value
+# Search/find the disease symptoms pair and return it
+def find(data, disease):
+    for disease_dict in data:
+        if list(disease_dict.keys())[0] == disease:
+            return [disease, disease_dict[disease]]
+
+
+def predict_symptoms(symptoms, type_disease):
+    symptoms_emb_nparr = np.array(embed(symptoms))
+
+    npzfile = np.load(f"symptomsfiles/best_{type_disease}_numpy.npz")
+
+    with open(f"symptomsfiles/{type_disease}_MIFTS.json", "r") as f:
+        MIFTS_disease_json = json.load(f)
+
+    top5 = list(get_disease(symptoms_emb_nparr, npzfile, MIFTS_disease_json).items())[:5]
+
+    combined_symptoms = "".join(f"{symptom}. " for symptom in symptoms)
+    top5_diseases = [t[0] for t in top5]
+
+    top_5_zero_shot = classifier(combined_symptoms, top5_diseases, multi_label=True)
+
+    top_5_dict = {top_5_zero_shot["labels"][i]: top_5_zero_shot["scores"][i] for i in range(5)}
+
+    skin_json = load(type_disease)
+
+    top5_diseases_symptoms = {}
+
+    for disease in top_5_dict.keys():
+        confidence = top_5_dict[disease]
+
+        disease, symptoms = find(skin_json, disease)
+
+        top5_diseases_symptoms[disease] = (symptoms, confidence)
+
+    return top5_diseases_symptoms
