@@ -1,4 +1,4 @@
-SENT.it: a novel project that aims to use machine learning to diagnose skin, ear, nose, and throat disorders/diseases 
+#SENT.it: a project that aims to use machine learning to diagnose skin, ear, nose, and throat disorders/diseases 
 
 ![Image](SENTit_Logo.png)
 
