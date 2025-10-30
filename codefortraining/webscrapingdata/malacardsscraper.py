@@ -16,20 +16,37 @@ def return_soup(URL):
 
 MAIN_URL = "https://www.malacards.org"
 
-soup = return_soup("https://www.malacards.org/categories/eye_disease_list")
+soup = return_soup("https://www.malacards.org/categories/ear_disease_list")
 
 table = soup.find("table", {"class": "search-results"})
 rows = table.find_all("tr")
 
-row_n = 51
-CARD_URL = MAIN_URL + rows[row_n].find("a")["href"]
+best_ear = {}
 
-print(CARD_URL)
+for row_n in range(len(rows)):
+  disease = rows[row_n].find("a")
+  disease_name = disease.text
 
-symp_soup = return_soup(CARD_URL)
+  CARD_URL = MAIN_URL + disease["href"]
 
-clinical_features = symp_soup.find("div", {"id": "clinical_features"})
+  print(CARD_URL)
 
-spans = clinical_features.find_all("span", {"itemprop": None, "class": None})
+  symp_soup = return_soup(CARD_URL)
 
-print(spans)
+  clinical_features = symp_soup.find("div", {"id": "clinical_features"})
+
+  spans = clinical_features.find_all("span", {"itemprop": None, "class": None})
+
+  #print(spans)
+
+  symptoms = []
+
+  for span in spans:
+    span_p = span.find("p")
+    if span_p and span_p.text:
+      symptoms.append(span_p.text.strip())
+  
+  best_ear[disease_name] = symptoms
+
+with open("best_ear.json", "w") as f:
+  json.dump(best_ear, f)
