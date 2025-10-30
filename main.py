@@ -150,6 +150,8 @@ def image_page():
 
             prediction = predict(img)
 
+            prediction = [prediction[0], round(prediction[1], 2)]
+
             return render_template('image.html', predict=prediction, user=current_user, top=top_3)
 
         if request.form.get("form_type") == "followup":
@@ -180,6 +182,7 @@ def image_page():
             # If they sent messages then get the list of messages
             if m:
                 m.messages.append(prompt)
+
                 db.session.commit()
             # If they have not sent any messages between each other than make the messages an empty list
             else:
@@ -222,8 +225,6 @@ def signup():
 
         try:
             location = [float(i) for i in request.form.get("loc").split(" ")]
-
-            print(location)
         except:
             flash("Please enter a valid location", category="error")
 
@@ -379,8 +380,6 @@ def communicate_patient():
         # This is the dict with all the medical practitioners - key and their distances from the patient - value
 
         top_3 = get_top_3()
-
-        print(top_3)
 
         # This gets run they click on the button to communicate to a specific medical practitioner
         if request.method == "POST":
