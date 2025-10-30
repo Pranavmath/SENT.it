@@ -13,11 +13,12 @@ from flask_socketio import *
 import yagmail
 import base64
 from ast import literal_eval
+import os
 
 print(predict_symptoms(["rash", "itchy skin", "swelling of the skin"], "skin"))
 
 sender_email = "sentitemail@gmail.com"
-sender_password = "lmdvxvawbhtsuovb"
+sender_password = os.getenv("SMTPPASSWORD")
 
 yag = yagmail.SMTP(sender_email, sender_password)
 
