@@ -1,5 +1,7 @@
+import requests
 from flask import *
-from ml import predict
+import numpy as np
+from ml import predict, predict_symptoms
 from PIL import Image
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_login import LoginManager
@@ -8,6 +10,21 @@ from models import User, Messages
 from app import *
 import math
 from flask_socketio import *
+import yagmail
+import base64
+from ast import literal_eval
+
+print(predict_symptoms(["rash", "itchy skin", "swelling of the skin"], "skin"))
+
+sender_email = "sentitemail@gmail.com"
+sender_password = "lmdvxvawbhtsuovb"
+
+yag = yagmail.SMTP(sender_email, sender_password)
+
+
+def send_email(receiver_email, subject, msg):
+    yag.send(to=receiver_email, subject=subject, contents=msg)
+
 
 """
 Note: Since the model files are really big git lfs was used. 
@@ -31,6 +48,9 @@ def degtokm(lat1, long1, lat2, long2):
     return d
 
 
+def parse_symptoms(list_symptoms):
+    return "".join(f"{symptom}, " for symptom in list_symptoms)
+
 # Configuring flask_socketio and flask app
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -45,26 +65,26 @@ app.app_context()
 def add_practitioners():
     # Medical practitioners:
     user1 = User(email="a@email.com",
-                 firstname="ADoctor",
+                 firstname="Alice",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[25.980, -80.277])
     user2 = User(email="b@email.com",
-                 firstname="BDoctor",
+                 firstname="Bob",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[26.626, -81.736])
     user3 = User(email="c@email.com",
-                 firstname="CDoctor",
+                 firstname="Carl",
                  password=generate_password_hash("1234567", method='sha256'),
-                 lastname="Bruh",
+                 lastname="vit",
                  job="Medical Practitioner",
                  location=[28.481, -81.339])
     user4 = User(email="d@email.com",
-                 firstname="DDoctor",
-                 lastname="Bruh",
+                 firstname="Dave",
+                 lastname="vit",
                  password=generate_password_hash("1234567", method='sha256'),
                  job="Medical Practitioner",
                  location=[40.398, -3.608])
@@ -79,6 +99,19 @@ def add_practitioners():
     db.session.commit()
 
 
+@app.route("/npi", methods=["POST"])
+def check_npi():
+    number = request.form['number']
+
+    URL = "https://npiregistry.cms.hhs.gov/api/?number=" + number + "&version=2.1"
+
+    r = requests.get(url=URL)
+
+    data = r.json()
+
+    return data
+
+
 # This just gets our current user
 @login_manager.user_loader
 def load_user(id):
@@ -89,21 +122,94 @@ def load_user(id):
 # with app.app_context(): add_practitioners()
 # print("Test people added")
 
-
 @app.route('/', methods=['GET', 'POST'])
+def home_page():
+    return render_template("home.html", current_user=current_user)
+
+
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    return render_template("contact.html", current_user=current_user)
+
+
+@app.route('/about', methods=['GET', 'POST'])
+def about():
+    return render_template("about.html", current_user=current_user)
+
+
+@app.route('/image', methods=['GET', 'POST'])
 @login_required
-def home():
+def image_page():
     # If they submit an image then given them the prediction
     if request.method == 'POST':
-        image = request.files['image']
-        img = Image.open(image)
+        if request.form.get("form_type") == "image":
+            top_3 = get_top_3()
 
-        prediction = predict(img)  # EX: prediction = ["Melanoma, 0.89"]
+            image = request.files['image']
+            img = Image.open(image)
 
-        return render_template('home.html', predict=prediction, user=current_user)
+            prediction = predict(img)
+
+            prediction = [prediction[0], round(prediction[1], 2)]
+
+            return render_template('image.html', predict=prediction, user=current_user, top=top_3)
+
+        if request.form.get("form_type") == "followup":
+            # This is the model's prediction. Get from a hidden element in a form. Format = [("disease", 0.1), ...]
+            top_5_prediction = literal_eval(request.form.get("top_5_prediction"))
+
+            sendto_firstname = request.form['redirect']
+            current_firstname = current_user.firstname
+
+            # This is the alphabetically first user from the current and send_to firstnames
+            user_1_firstname = sorted([current_firstname, sendto_firstname])[0]
+
+            # This is the alphabetically second user from the current and send_to firstnames
+            user_2_firstname = sorted([current_firstname, sendto_firstname])[1]
+
+            # This is the messages object between the users
+            m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
+
+            # This is the prediction from the model in a nice prompt
+            model_prediction_prompt = "".join(f"For the top {i+1}: the disease was {top_5_prediction[i][0]} with a probability of {top_5_prediction[i][1]}; " for i in range(5))
+
+            # Automatic prompt added to current messages
+            prompt = str(
+                f'AUTOGENERATED MESSAGE || {current_user.firstname}: Hello Doctor, the website had the following prediction: {model_prediction_prompt}')
+
+            print(prompt)
+
+            # If they sent messages then get the list of messages
+            if m:
+                m.messages.append(prompt)
+
+                db.session.commit()
+            # If they have not sent any messages between each other than make the messages an empty list
+            else:
+                new_messages = Messages(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname,
+                                        messages=[prompt])
+                db.session.add(new_messages)
+                db.session.commit()
+
+            # Messages object after commiting
+            m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
+            messages = m.messages
+
+            # The user will be added to the contacts of the medical practitioner
+            # The contacts of a medical practitioners are all the patients that have talked to them
+            send_to_user = User.query.filter_by(firstname=sendto_firstname).first()
+
+            # This makes sure they aren't already in the contact
+            if not (current_user.firstname in list(send_to_user.contacts)):
+                send_to_user.contacts.append(current_user.firstname)
+                db.session.commit()
+
+            return render_template("chat.html", user=current_user, sendto_firstname=sendto_firstname, flash=flash,
+                                   messages=messages)
+
     # If not then just return the prediction as [None, None] so nothing is displayed
     elif request.method == "GET":
-        return render_template('home.html', predict=[None, None])
+        return render_template('image.html', predict=[None, None])
 
 
 @app.route("/sign-up", methods=["GET", "POST"])
@@ -116,8 +222,11 @@ def signup():
         password = request.form.get("password")
         confirmpassword = request.form.get("confirmpassword")
         job = request.form.get("job")
-        location = [i for i in request.form.get("loc").split(" ")]
-        print(request.form.get("loc"))
+
+        try:
+            location = [float(i) for i in request.form.get("loc").split(" ")]
+        except:
+            flash("Please enter a valid location", category="error")
 
         user = User.query.filter_by(email=email).first()
 
@@ -139,14 +248,14 @@ def signup():
                 db.session.commit()
                 login_user(new_user, remember=True)
                 flash("Account created!", category="success")
-                return redirect(url_for('home'))
+                return redirect(url_for('home_page'))
 
-    return render_template("sign-up.html", user=current_user)
+    return render_template("sign-up.html", user=current_user, check_npi=check_npi)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # If they are trying to login in in then check if the login credentials are correct and then redirect to home
+    # If they are trying to log in, then check if the login credentials are correct and then redirect to home
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -155,7 +264,7 @@ def login():
             if check_password_hash(user.password, password):
                 flash("Logged in successfully!", category="success")
                 login_user(user, remember=True)
-                return redirect(url_for("home"))
+                return redirect(url_for("home_page"))
             else:
                 flash("Incorrect password, try again.", category="error")
         else:
@@ -168,12 +277,74 @@ def login():
 def symptoms():
     # When they send their symptoms then return the prediction
     if request.method == "POST":
-        symptoms_list = request.form.getlist("multiselect")
+        if request.form.get("form_type") == "symptoms":
+            top_3 = get_top_3()
 
-        # Right now we just print the list of symptoms but later we will get predictions from it
-        print(symptoms_list)
+            # List of symptoms
+            symptoms_list = request.form.getlist("formtextarea[]")
 
-    return render_template("symptoms.html")
+            # Type of disease: Skin, Ear, Oral, Nose, or Not Sure
+            type_disease = request.form.get("typediseasedropdown")
+
+            # Right now we just print the list of symptoms, but later we will get predictions from it
+
+            prediction = predict_symptoms(symptoms_list, type_disease)
+
+            return render_template("symptoms.html", predict=list(prediction.items()), top=top_3)
+
+        if request.form.get("form_type") == "followup":
+            # This is the model's prediction. Get from a hidden element in a form. Format = [("disease", 0.1), ...]
+            top_5_prediction = literal_eval(request.form.get("top_5_prediction"))
+
+            sendto_firstname = request.form['redirect']
+            current_firstname = current_user.firstname
+
+            # This is the alphabetically first user from the current and send_to firstnames
+            user_1_firstname = sorted([current_firstname, sendto_firstname])[0]
+
+            # This is the alphabetically second user from the current and send_to firstnames
+            user_2_firstname = sorted([current_firstname, sendto_firstname])[1]
+
+            # This is the messages object between the users
+            m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
+
+            # This is the prediction from the model in a nice prompt
+            model_prediction_prompt = "".join(f"For the top {i + 1} disease: We think you have {disease_tuple[0]} with an probability of {disease_tuple[1][1]}. Here are the symptoms in our database for this disease: {parse_symptoms( disease_tuple[1][0] )}; " for i, disease_tuple in enumerate(top_5_prediction))
+
+            # Automatic prompt added to current messages
+            prompt = str(
+                f'AUTOGENERATED MESSAGE || {current_user.firstname}: Hello Doctor, the website had the following prediction: {model_prediction_prompt}')
+
+            print(prompt)
+
+            # If they sent messages then get the list of messages
+            if m:
+                m.messages.append(prompt)
+                db.session.commit()
+            # If they have not sent any messages between each other than make the messages an empty list
+            else:
+                new_messages = Messages(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname,
+                                        messages=[prompt])
+                db.session.add(new_messages)
+                db.session.commit()
+
+            # Messages object after committing the prompt
+            m = Messages.query.filter_by(user_1_firstname=user_1_firstname, user_2_firstname=user_2_firstname).first()
+            messages = m.messages
+
+            # The user will be added to the contacts of the medical practitioner
+            # The contacts of a medical practitioners are all the patients that have talked to them
+            send_to_user = User.query.filter_by(firstname=sendto_firstname).first()
+
+            # This makes sure they aren't already in the contact
+            if not (current_user.firstname in list(send_to_user.contacts)):
+                send_to_user.contacts.append(current_user.firstname)
+                db.session.commit()
+
+            return render_template("chat.html", user=current_user, sendto_firstname=sendto_firstname, flash=flash,
+                                   messages=messages)
+    else:
+        return render_template("symptoms.html", predict=None)
 
 
 # This just logs out the user
@@ -185,23 +356,30 @@ def logout():
     return redirect(url_for('login'))
 
 
+def get_top_3():
+    distances = {}
+
+    # Adds all info to distances dict
+    for med in User.query.filter_by(job="Medical Practitioner").all():
+        patient_location = current_user.location
+        med_location = med.location
+        distance = round(degtokm(patient_location[0], patient_location[1], med_location[0], med_location[1]), 2)
+        distances[med] = distance
+
+    # This gets the top_3 closet medical practitioners
+    top_3 = dict(sorted(distances.items(), key=lambda x: x[1])[:3])
+
+    return top_3
+
+
 @app.route("/communicate-patient", methods=["GET", "POST"])
 @login_required
 def communicate_patient():
     # If they are a patient then allow them to access
     if current_user.job == "patient":
         # This is the dict with all the medical practitioners - key and their distances from the patient - value
-        distances = {}
 
-        # Adds all info to distances dict
-        for med in User.query.filter_by(job="Medical Practitioner").all():
-            patient_location = current_user.location
-            med_location = med.location
-            distance = round(degtokm(patient_location[0], patient_location[1], med_location[0], med_location[1]), 2)
-            distances[med] = distance
-
-        # This gets the top_3 closet medical practitioners
-        top_3 = dict(sorted(distances.items(), key=lambda x: x[1])[:3])
+        top_3 = get_top_3()
 
         # This gets run they click on the button to communicate to a specific medical practitioner
         if request.method == "POST":
@@ -348,9 +526,14 @@ def handle_message(message, sendto_firstname):
 
         emit("message", message, to=[sendto_socketid, current_socketid])
 
-    # If the user they want to send a message to is online then tell the current user that they are offline
+    # If the user they want to send a message to is offline then tell the current user that they are offline
     else:
-        emit("message", "offline", to=current_socketid)
+        sendto_email = str(User.query.filter_by(firstname=sendto_firstname).first().email)
+        offline_message = f"Hello but the following user {current_firstname} has sent the following message: {message} \n Please check your chat at your convenience"
+
+        emit("message", [message, "offline"], to=current_socketid)
+
+        send_email(sendto_email, subject="Receiving a Message - SENT.it", msg=offline_message)
 
 
 if __name__ == '__main__':

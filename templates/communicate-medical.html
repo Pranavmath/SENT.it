@@ -9,7 +9,7 @@
 {% else %}
     <form action="" method="post">
     {% for patient in contacts %}
-        Do you want to chat with: <input type="submit" class="btn btn-primary" name="redirect" value="{{ patient }}">
+        Do you want to chat with: <input type="submit" class="button is-info" name="redirect" value="{{ patient }}">
         <br>
     {% endfor %}
     </form>

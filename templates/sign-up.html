@@ -1,15 +1,18 @@
-{% extends "base.html" %} {% block title %}Communicate{% endblock %} 
+<!DOCTYPE html><!-- This site was created in Webflow. https://www.webflow.com --><!-- Last Published: Fri Feb 03 2023 02:31:18 GMT+0000 (Coordinated Universal Time) --><html data-wf-domain="sent-it-2-0.webflow.io" data-wf-page="63d7bc386b7da234617c7c66" data-wf-site="63d7bc386b7da298927c7c63"><head><meta charset="utf-8"/><title>SENT.it</title><meta content="Business - Webflow HTML website template" property="og:title"/><meta content="https://uploads-ssl.webflow.com/5c6eb5400253230156de2bd6/5cdc268dd7274d5c05c6009a_Business%20SEO.jpg" property="og:image"/><meta content="Business - Webflow HTML website template" property="twitter:title"/><meta content="https://uploads-ssl.webflow.com/5c6eb5400253230156de2bd6/5cdc268dd7274d5c05c6009a_Business%20SEO.jpg" property="twitter:image"/><meta content="width=device-width, initial-scale=1" name="viewport"/><meta content="Webflow" name="generator"/><link href="{{url_for('static', filename='home_styles.css')}}" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous"/><script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script><script type="text/javascript">WebFont.load({  google: {    families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic"]  }});</script><!--[if lt IE 9]><script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js" type="text/javascript"></script><![endif]--><script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script><link href="https://uploads-ssl.webflow.com/img/favicon.ico" rel="shortcut icon" type="image/x-icon"/><link href="https://uploads-ssl.webflow.com/img/webclip.png" rel="apple-touch-icon"/></head><body><div data-collapse="medium" data-animation="default" data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="navigation w-nav">
+{% extends "base.html" %} {% block title %}Communicate{% endblock %}
 {% block main%}
 <html lang="en">
   <head>
     <title>Signup</title>
     <meta charset="utf-8">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/sign-up.css') }}">
+      <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   </head>
+
 <!--NOTE THIS IS THE SIGNUP FORM-->
   <body>
      <h1 class="title">Sign up</h1>
-    <form method="POST" class="box">
+    <form method="POST" class="box" id="form-sign-up" onsubmit="submitform(event);">
     <div class="block">
       <label for="firstname" class="label">First Name</label>
       <input
@@ -64,16 +67,33 @@
 
   <div class="block">
     <label for="job">Are you a medical Practitioner or a patient</label>
-    <select class="input" aria-label="Job" id="job" name="job">
+    <select class="input" aria-label="Job" id="job" name="job" onchange="test(this);">
       <option selected>Please select a value</option>
-      <option value="medical">Medical Practitioner</option>
+      <option value="Medical Practitioner">Medical Practitioner</option>
       <option value="patient">Patient</option>
     </select>
   </div>
 
+<div id="div-npi" style="display: none">
+    Please enter your NPI code:
+    <input id="npi">
+</div>
+
+<br><br>
+
+<script>
+    window.test = function(e) {
+      if (e.value === 'Medical Practitioner') {
+        document.getElementById('div-npi').style.display = "block";
+      } else {
+          document.getElementById('div-npi').style.display = "none";
+      }
+    }
+</script>
+
   <div class="block">
     <label for="location">Location</label>
-    <button type="button" class="button is-primary" onclick="getlocation()" id="location">
+    <button type="button" class="button is-primary" onclick="getlocation()" id="locationbutton">
       Get Location
     </button>
 
@@ -83,32 +103,72 @@
 
     <input type='hidden' id='location' name='loc' value='' />
       
-      <script>
-        var variable1 = document.getElementById("loc");
-        var variable2 = document.getElementById("location");
-        
-        function getlocation() {
-          // change button to loading
-          document.getElementById("location").classList.add("is-loading");
-          navigator.geolocation.getCurrentPosition(showLoc);
-          document.getElementById("location").classList.add("is-success");
-          // change back to normal
-        }
-        function showLoc(pos) {
-          variable2.value = pos.coords.latitude + " " + pos.coords.longitude;
-          variable1.innerHTML =
-            "Latitude: " +
-            pos.coords.latitude +
-            "<br>Longitude: " +
-            pos.coords.longitude;
-          document.getElementById("location").classList.remove("is-loading");
-        }
-      </script>
+    <script>
+    var variable1 = document.getElementById("loc");
+    var variable2 = document.getElementById("location");
+
+    function getlocation() {
+      // change button to loading
+      document.getElementById("location").classList.add("is-loading");
+      navigator.geolocation.getCurrentPosition(showLoc);
+      document.getElementById("location").classList.add("is-success");
+      // change back to normal
+    }
+    function showLoc(pos) {
+      variable2.value = pos.coords.latitude + " " + pos.coords.longitude;
+      variable1.innerHTML =
+        "Latitude: " +
+        pos.coords.latitude +
+        "<br>Longitude: " +
+        pos.coords.longitude;
+      document.getElementById("locationbutton").classList.remove("is-loading");
+    }
+    </script>
   </div>
   
   <br><br>
-    <button type="submit" class="button is-primary"> Submit</button>
-    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg>
+    <button type="submit" class="button is-primary">Submit</button>
+        <script>
+            function submitform(){
+                event.preventDefault();
+
+                var e = document.getElementById("job");
+                var value = e.value;
+
+                if (value === 'Medical Practitioner') {
+                    let npi =  parseInt(document.getElementById("npi").value);
+
+                    $.ajax({
+                      data : {
+                        number : npi
+                      },
+                      type : 'POST',
+                      url : '/npi'
+                    })
+                    .done(function(data){
+                        if(data.hasOwnProperty('result_count')){
+                            if (data["result_count"] > 0) {
+                              document.getElementById("form-sign-up").submit();
+                            } else {
+                                swal({
+                                    title: "Please enter a valid NPI",
+                                    icon: "error"
+                                })
+                                return false;
+                            }
+                        } else {
+                            swal({
+                                title: "Please enter a valid NPI",
+                                icon: "error"
+                            })
+                            return false;
+                        }
+                    });
+                } else {
+                    document.getElementById("form-sign-up").submit();
+                }
+            }
+        </script>
     </form>
   </body>
 </html>

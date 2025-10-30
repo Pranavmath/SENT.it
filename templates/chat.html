@@ -9,6 +9,7 @@
   <title>Title</title>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+   <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 </head>
 
 <!-- Try to figure out a way to put the javascript code in the socket.js file -->
@@ -35,8 +36,13 @@ $(document).ready(function() {
         // If the message is that the user they want to send a message to is offline then alert the user
         // If the user they want to send a message to is not offline then show the message
 
-        if (data == "offline") {
-            alert("The user you want to send the message to is offline");
+        if (data[1] == "offline") {
+            $("#messages").append($('<p>').text(data[0]));
+            swal({
+                title: "The user you are trying to communicate is offline",
+                text: "However, your message will still be delivered to the user and stored",
+                icon: "warning"
+            });
         } else {
             $("#messages").append($('<p>').text(data));
         }
@@ -45,7 +51,16 @@ $(document).ready(function() {
     // When the user clicks on the button to send a message then that message will be sent to the server
     $("#sendBtn").on("click", function() {
         // Sends the message to the server
-        socket.emit("message", "{{ user.firstname }}" + ": " + $("#message").val(), sendto_firstname_str);
+
+        const d = new Date();
+        let localtime = d.toLocaleString("en", {
+          timeStyle: "short" ,
+          dateStyle: "medium"
+        });
+
+        var entire_msg = localtime + " || " + "{{ user.firstname }}" + ": " + $("#message").val();
+
+        socket.emit("message", entire_msg, sendto_firstname_str);
         // Clears the message text box once they send the message
         $("#message").val("");
     });
@@ -55,12 +70,28 @@ $(document).ready(function() {
 <div id="messages">
 
 </div>
-<input type="text" id="message" placeholder="Message">
-<button id="sendBtn" class="btn btn-primary">Send</button>
+<input type="text" id="message" placeholder="Message" class="input is-info">
+<button id="sendBtn" class="button is-success">Send</button>
+
+<script>
+    // Get the input field
+    var input = document.getElementById("message");
+
+    // Execute a function when the user presses a key on the keyboard
+    input.addEventListener("keypress", function(event) {
+      // If the user presses the "Enter" key on the keyboard
+      if (event.key === "Enter") {
+        // Cancel the default action, if needed
+        event.preventDefault();
+        // Trigger the button element with a click
+        document.getElementById("sendBtn").click();
+      }
+    });
+</script>
 
 <br><br>
 
-<button onclick=clear_chat() class="btn btn-primary">Clear Chat</button>
+<button onclick=clear_chat() class="button is-warning">Clear Chat</button>
 
 <script>
     // This is the function that clears the chat when the clear chat button is pressed
